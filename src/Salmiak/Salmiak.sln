@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Salmiak", "Salmiak\Salmiak.fsproj", "{1DF7D777-C101-448E-B404-AEFBE7B8175B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Salmiak.Sandbox", "Salmiak.Sandbox\Salmiak.Sandbox.fsproj", "{460DD0CF-4463-461D-8305-DBDF5DD8A4CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1DF7D777-C101-448E-B404-AEFBE7B8175B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DF7D777-C101-448E-B404-AEFBE7B8175B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DF7D777-C101-448E-B404-AEFBE7B8175B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DF7D777-C101-448E-B404-AEFBE7B8175B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{460DD0CF-4463-461D-8305-DBDF5DD8A4CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{460DD0CF-4463-461D-8305-DBDF5DD8A4CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{460DD0CF-4463-461D-8305-DBDF5DD8A4CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{460DD0CF-4463-461D-8305-DBDF5DD8A4CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

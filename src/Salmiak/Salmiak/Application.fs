@@ -1,0 +1,1 @@
+﻿module Salmiak.Application

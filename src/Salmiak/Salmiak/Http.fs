@@ -1,11 +1,33 @@
 ﻿namespace Salmiak
 
-type SalmiakHttpRequest = 
-    | Nil
+type HttpMethod = Get | Post | Put | Delete
+type HttpStatusCode = HttpStatusCode of int
 
-type SalmiakHttpResponse = 
-    | Nil
+type HttpUrl =
+    { scheme : string
+      host : string
+      basePath : string
+      path : string
+      queryString : Map<string, string> }
+
+type HttpRequest = 
+    { url : HttpUrl
+      verb : HttpMethod
+      headers : Map<string, string>
+      body : string }
+
+type HttpResponse = 
+    { status : HttpStatusCode
+      headers : Map<string, string>
+      body : string }
+
+type HttpAction<'Data> =
+    { request : HttpRequest
+      response : HttpResponse
+      customData : 'Data }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module SalmiakHttpRequest = 
-    let sample() = failwith "Not implemented"
+module HttpRequest = failwith "Not implemented"
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module HttpResponse = failwith "Not implemented"

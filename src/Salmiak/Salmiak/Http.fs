@@ -3,28 +3,12 @@
 type HttpMethod = Get | Post | Put | Delete
 type HttpStatusCode = HttpStatusCode of int
 
-type HttpUrl =
-    { scheme : string
-      host : string
-      basePath : string
-      path : string
-      queryString : Map<string, string> }
+type HttpHeaders = Map<string, string>
+type HttpBody = string
 
-type HttpRequest = 
-    { url : HttpUrl
-      verb : HttpMethod
-      headers : Map<string, string>
-      body : string }
-
-type HttpResponse = 
-    { status : HttpStatusCode
-      headers : Map<string, string>
-      body : string }
-
-type HttpAction<'Data> =
-    { request : HttpRequest
-      response : HttpResponse
-      customData : 'Data }
+type HttpRequest = HttpRequest of Url * HttpMethod * HttpHeaders * HttpBody
+type HttpResponse = HttpResponse of HttpStatusCode * HttpHeaders * HttpBody
+type HttpAction<'T> = HttpAction of HttpRequest * HttpResponse * 'T
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpRequest = failwith "Not implemented"

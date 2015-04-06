@@ -2,9 +2,10 @@
 
 open Owin
 open Microsoft.Owin.Hosting
+open Salmiak
 
 type Bootstrapper() = 
-    member this.Configuration(app : IAppBuilder) = app.Use(Salmiak.Owin.createMiddlewareFunc id) |> ignore
+    member this.Configuration(app : IAppBuilder) = app.Use(Salmiak.Owin.createMiddlewareFunc Application.init) |> ignore
 
 module Program = 
     [<EntryPoint>]

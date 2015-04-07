@@ -6,7 +6,7 @@ open System.IO
 open System.Text
 open System.Threading.Tasks
 
-type SalmiakApplication<'T, 'U> = HttpAction<'T> -> HttpAction<'U> 
+type SalmiakApplication<'T, 'U> = HttpAction<HttpData<'T>>  -> HttpAction<HttpData<'U>> 
 
 type AppFunc = Func<IDictionary<string, obj>, Task>
 type MiddlewareFunc = Func<AppFunc, AppFunc>
@@ -44,7 +44,7 @@ let initializeRequest (env : IDictionary<string, obj>) =
     // TODO: Make other kinds of bodies possible
     // TODO: Make body async
     let bodyReader = new StreamReader(owinBodyStream, Encoding.UTF8)
-    let body = bodyReader.ReadToEnd()
+    let body = HttpBody.ofString (bodyReader.ReadToEnd())
 
     HttpRequest (url, requestMethod, headers, body)
 
@@ -58,32 +58,34 @@ let initializeResponse (env : IDictionary<string, obj>) =
 
     // TODO: Include status code smarter
     // TODO: Make body more generic and async
-    HttpResponse (HttpStatusCode 200, headers, String.Empty)
+    HttpResponse (HttpStatusCode 200, headers, HttpBody.empty)
 
 let owinToAction env = 
     let request = initializeRequest env
     let response = initializeResponse env
-    HttpAction (request, response, ())
+    HttpAction (Async.singleton (HttpData (request, response, ())))
 
-let actionToOwin (env : IDictionary<string, obj>) (HttpAction(_, HttpResponse(HttpStatusCode code, headers, body), _)) =
-    env.["owin.ResponseStatusCode"] <- code :> obj
+let actionToOwin (env : IDictionary<string, obj>) (HttpAction asyncData) =
+    async {
+        let! HttpData(_, HttpResponse(HttpStatusCode code, headers, body), _) = asyncData
+        env.["owin.ResponseStatusCode"] <- code :> obj
     
-    let owinHeaders = env.["owin.ResponseHeaders"] :?> IDictionary<string, string[]>
-    headers |> Map.iter (fun key value -> owinHeaders.[key] <- [| value |])
+        let owinHeaders = env.["owin.ResponseHeaders"] :?> IDictionary<string, string[]>
+        headers |> Map.iter (fun key value -> owinHeaders.[key] <- [| value |])
     
-    // TODO: Fix body in same way as for request described above
-    let owinBodyStream = env.["owin.ResponseBody"] :?> Stream
-    let responseWriter = new StreamWriter(owinBodyStream, Encoding.UTF8)
-    responseWriter.Write(body)
-    responseWriter.Flush()
-
-    ()
+        let owinBodyStream = env.["owin.ResponseBody"] :?> Stream
+        let bytes = HttpBody.asBytes body
+    
+        do! owinBodyStream.WriteAsync(bytes, 0, Array.length bytes) |> Async.awaitPlainTask
+        do! owinBodyStream.FlushAsync() |> Async.awaitPlainTask
+    }
 
 let run application env = 
     let initialAction = owinToAction env
     let result = application initialAction
-    actionToOwin env result
-    Task.FromResult () :> Task
+    result
+    |> actionToOwin env
+    |> Async.startAsPlainTask
     
 let createAppFunc (application : SalmiakApplication<unit, 'T>) = AppFunc(run application)
 let createMiddlewareFunc application = MiddlewareFunc(fun _ -> createAppFunc application)

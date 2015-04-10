@@ -1,34 +1,52 @@
 ﻿namespace Salmiak
 
-type HttpMethod = Get | Post | Put | Delete
+type HttpVerb = Get | Post | Put | Delete
 type HttpStatusCode = HttpStatusCode of int
 
 type HttpHeaders = Map<string, string>
-type HttpBody = HttpBody of byte[]
 
-type HttpRequest = HttpRequest of Url * HttpMethod * HttpHeaders * HttpBody
+type HttpRequest = 
+    { verb : HttpVerb
+      url : Url  
+      headers : HttpHeaders
+      body : HttpBody }
+
 type HttpResponse = HttpResponse of HttpStatusCode * HttpHeaders * HttpBody
 type HttpData<'T> = HttpData of HttpRequest * HttpResponse * 'T
 type HttpAction<'T> = HttpAction of Async<'T>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module HttpBody =
-    open System.Text
-
-    let getUtf8Bytes (str : string) = Encoding.UTF8.GetBytes str
-    let getUtf8String (bytes : byte[]) = Encoding.UTF8.GetString bytes
-
-    let empty = HttpBody Array.empty
-
-    let ofString (body : string) = HttpBody (getUtf8Bytes body)
-    let ofBytes (body : byte[]) = HttpBody body
-    let asString (HttpBody bytes) = getUtf8String bytes
-    let asBytes (HttpBody bytes) = bytes
-
-
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpRequest =
-    let placeholder () = failwith "Not implemented"
+    let make verb url =
+        { verb = verb
+          url = url
+          headers = Map.empty
+          body = HttpBody.empty }
+
+    let getVerb request = request.verb
+    let withVerb verb request = { request with verb = verb }
+
+    let getUrl request = request.url
+    let withUrl url request = { request with url = url }
+
+    let getHeaders request = Map.toSeq request.headers
+    let getHeader name request = Map.find name request.headers
+    let tryGetHeader name request = Map.tryFind name request.headers
+    let containsHeader name request = Map.containsKey name request.headers
+
+    let withHeaders headers request = { request with headers = Seq.fold (fun hs (name, value) -> Map.add name value hs) request.headers headers }
+    let withHeader name value request = { request with headers = Map.add name value request.headers } 
+    let withoutHeader name request = { request with headers = Map.remove name request.headers }
+    let mapHeaders mapping request = { request with headers = Map.map mapping request.headers }
+    let filterHeaders predicate request = { request with headers = Map.filter predicate request.headers }
+
+    let getBody request = HttpBody.asBytes request.body
+    let getBodyAsString request = HttpBody.asString request.body
+    let withBody body request = { request with body = HttpBody.ofBytes body }
+    let withBodyOfString body request = { request with body = HttpBody.ofString body }
+    let withoutBody request = { request with body = HttpBody.empty }
+    // TODO: Implement async versions
+    // TODO: Implement other body types
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpResponse =

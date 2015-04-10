@@ -13,7 +13,7 @@ type MiddlewareFunc = Func<AppFunc, AppFunc>
 
 let initializeRequest (env : IDictionary<string, obj>) = 
     let owinHeaders = env.["owin.RequestHeaders"] :?> IDictionary<string, string[]>
-    let owinMethod = env.["owin.RequestMethod"] :?> string
+    let owinVerb = env.["owin.RequestMethod"] :?> string
     let owinBasePath = env.["owin.RequestPathBase"] :?> string
     let owinPath = env.["owin.RequestPath"] :?> string
     let owinProtocol = env.["owin.RequestProtocol"] :?> string
@@ -24,10 +24,9 @@ let initializeRequest (env : IDictionary<string, obj>) =
     let headers =
         owinHeaders :> seq<KeyValuePair<string, string[]>>
         |> Seq.map (fun (KeyValue(key, values)) -> (key, String.concat ", " values))
-        |> Map.ofSeq
 
-    let requestMethod =
-        match owinMethod.ToLowerInvariant() with
+    let verb =
+        match owinVerb.ToLowerInvariant() with
         | "get" -> Get
         | "post" -> Post
         | "put" -> Put
@@ -44,9 +43,10 @@ let initializeRequest (env : IDictionary<string, obj>) =
     // TODO: Make other kinds of bodies possible
     // TODO: Make body async
     let bodyReader = new StreamReader(owinBodyStream, Encoding.UTF8)
-    let body = HttpBody.ofString (bodyReader.ReadToEnd())
 
-    HttpRequest (url, requestMethod, headers, body)
+    HttpRequest.make verb url
+    |> HttpRequest.withHeaders headers
+    |> HttpRequest.withBodyOfString (bodyReader.ReadToEnd())
 
 let initializeResponse (env : IDictionary<string, obj>) = 
     let owinHeaders = env.["owin.ResponseHeaders"] :?> IDictionary<string, string[]>

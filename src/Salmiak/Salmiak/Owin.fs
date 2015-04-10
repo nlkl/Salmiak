@@ -54,11 +54,9 @@ let initializeResponse (env : IDictionary<string, obj>) =
     let headers =
         owinHeaders :> seq<KeyValuePair<string, string[]>>
         |> Seq.map (fun (KeyValue(key, values)) -> (key, String.concat ", " values))
-        |> Map.ofSeq
 
-    // TODO: Include status code smarter
-    // TODO: Make body more generic and async
-    HttpResponse (HttpStatusCode 200, headers, HttpBody.empty)
+    HttpResponse.make HttpStatus.ok200
+    |> HttpResponse.withHeaders headers
 
 let owinToAction env = 
     let request = initializeRequest env
@@ -67,15 +65,22 @@ let owinToAction env =
 
 let actionToOwin (env : IDictionary<string, obj>) (HttpAction asyncData) =
     async {
-        let! HttpData(_, HttpResponse(HttpStatusCode code, headers, body), _) = asyncData
-        env.["owin.ResponseStatusCode"] <- code :> obj
+        let! HttpData(_, response, _) = asyncData
+
+        match HttpResponse.getStatus response with
+        | HttpStatus code ->
+            env.["owin.ResponseStatusCode"] <- code :> obj
+        | HttpStatusWithPhrase (code, phrase) ->
+            env.["owin.ResponseStatusCode"] <- code :> obj
+            env.["owin.ResponseReasonPhrase"] <- phrase :> obj
     
         let owinHeaders = env.["owin.ResponseHeaders"] :?> IDictionary<string, string[]>
-        headers |> Map.iter (fun key value -> owinHeaders.[key] <- [| value |])
-    
+        response
+        |> HttpResponse.getHeaders
+        |> Seq.iter (fun (key, value) -> owinHeaders.[key] <- [| value |])
+        
         let owinBodyStream = env.["owin.ResponseBody"] :?> Stream
-        let bytes = HttpBody.asBytes body
-    
+        let bytes = HttpResponse.getBodyAsBytes response
         do! owinBodyStream.WriteAsync(bytes, 0, Array.length bytes) |> Async.awaitPlainTask
         do! owinBodyStream.FlushAsync() |> Async.awaitPlainTask
     }

@@ -44,8 +44,6 @@
   <ItemGroup>
     <Compile Include="Async.fs" />
     <Compile Include="Url.fs" />
-    <Compile Include="HttpBody.fsi" />
-    <Compile Include="HttpBody.fs" />
     <Compile Include="Http.fsi" />
     <Compile Include="Http.fs" />
     <Compile Include="Application.fs" />

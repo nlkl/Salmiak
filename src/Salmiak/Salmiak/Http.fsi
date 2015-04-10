@@ -1,20 +1,37 @@
 ﻿namespace Salmiak
 
 type HttpVerb = Get | Post | Put | Delete
-type HttpStatusCode = HttpStatusCode of int
 
-type HttpHeaders = Map<string, string>
+type HttpStatus =
+     | HttpStatus of int 
+     | HttpStatusWithPhrase of int * string
 
+// TODO: Re-include HttpBody when there is need to add more detailed deserializations
+//type HttpBody
 type HttpRequest
-
-[<NoEquality; NoComparison>]
-type HttpResponse = HttpResponse of HttpStatusCode * HttpHeaders * HttpBody
+type HttpResponse
 
 [<NoEquality; NoComparison>]
 type HttpData<'T> = HttpData of HttpRequest * HttpResponse * 'T
 
 [<NoEquality; NoComparison>]
 type HttpAction<'T> = HttpAction of Async<'T>
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module HttpStatus =
+    val ok200 : HttpStatus
+    val unauthorized401 : HttpStatus
+    val forbidden403 : HttpStatus
+    val notFound404 : HttpStatus
+    val internalServerError500 : HttpStatus
+
+//[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+//module HttpBody = 
+//    val empty : HttpBody
+//    val ofString : body:string -> HttpBody
+//    val ofBytes : body:byte[] -> HttpBody
+//    val asString : body:HttpBody -> string
+//    val asBytes : body:HttpBody -> byte[]
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpRequest = 
@@ -32,8 +49,28 @@ module HttpRequest =
     val withoutHeader : name:string -> request:HttpRequest -> HttpRequest
     val mapHeaders : mapping:(string -> string -> string) -> request:HttpRequest -> HttpRequest
     val filterHeaders : predicate:(string -> string -> bool) -> request:HttpRequest -> HttpRequest
-    val getBody : request:HttpRequest -> byte []
+    val getBodyAsBytes : request:HttpRequest -> byte []
     val getBodyAsString : request:HttpRequest -> string
-    val withBody : body:byte [] -> request:HttpRequest -> HttpRequest
+    val withBodyOfBytes : body:byte [] -> request:HttpRequest -> HttpRequest
     val withBodyOfString : body:string -> request:HttpRequest -> HttpRequest
     val withoutBody : request:HttpRequest -> HttpRequest
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module HttpResponse = 
+    val make : verb:HttpStatus -> HttpResponse
+    val getStatus : response:HttpResponse -> HttpStatus
+    val withStatus : status:HttpStatus -> response:HttpResponse -> HttpResponse
+    val getHeaders : response:HttpResponse -> seq<string * string>
+    val getHeader : name:string -> response:HttpResponse -> string
+    val tryGetHeader : name:string -> response:HttpResponse -> string option
+    val containsHeader : name:string -> response:HttpResponse -> bool
+    val withHeaders : headers:seq<string * string> -> response:HttpResponse -> HttpResponse
+    val withHeader : name:string -> value:string -> response:HttpResponse -> HttpResponse
+    val withoutHeader : name:string -> response:HttpResponse -> HttpResponse
+    val mapHeaders : mapping:(string -> string -> string) -> response:HttpResponse -> HttpResponse
+    val filterHeaders : predicate:(string -> string -> bool) -> response:HttpResponse -> HttpResponse
+    val getBodyAsBytes : response:HttpResponse -> byte []
+    val getBodyAsString : response:HttpResponse -> string
+    val withBodyOfBytes : body:byte [] -> response:HttpResponse -> HttpResponse
+    val withBodyOfString : body:string -> response:HttpResponse -> HttpResponse
+    val withoutBody : response:HttpResponse -> HttpResponse

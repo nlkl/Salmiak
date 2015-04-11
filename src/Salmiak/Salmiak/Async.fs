@@ -10,5 +10,11 @@ let map mapping asyncValue =
         return mapping value
     }
 
+let bind mapping asyncValue =
+    async {
+        let! value = asyncValue
+        return! mapping value
+    }
+
 let startAsPlainTask computation = Async.StartAsTask computation :> Task
 let awaitPlainTask (task : Task) = Async.AwaitTask(task.ContinueWith(ignore))

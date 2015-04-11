@@ -6,66 +6,82 @@ open System.IO
 open System.Text
 open System.Threading.Tasks
 
-type SalmiakApplication<'T, 'U> = HttpAction<HttpData<'T>>  -> HttpAction<HttpData<'U>> 
+type SalmiakApplication<'T, 'U> = Context<'T>  -> Async<Context<'U>> 
 
 type AppFunc = Func<IDictionary<string, obj>, Task>
 type MiddlewareFunc = Func<AppFunc, AppFunc>
 
+let readBytesAsync (stream : Stream) =
+    async {
+        use memoryStream = new MemoryStream()
+        do! stream.CopyToAsync(memoryStream) |> Async.awaitPlainTask
+        return memoryStream.ToArray()
+    }
+
+let writeBytesAsync bytes (stream : Stream) =
+    async {
+        do! stream.WriteAsync(bytes, 0, Array.length bytes) |> Async.awaitPlainTask
+        do! stream.FlushAsync() |> Async.awaitPlainTask
+    }
+
+let mapHeader (KeyValue(key, values)) = (key, String.concat ", " values)
+
 let initializeRequest (env : IDictionary<string, obj>) = 
-    let owinHeaders = env.["owin.RequestHeaders"] :?> IDictionary<string, string[]>
-    let owinVerb = env.["owin.RequestMethod"] :?> string
-    let owinBasePath = env.["owin.RequestPathBase"] :?> string
-    let owinPath = env.["owin.RequestPath"] :?> string
-    let owinProtocol = env.["owin.RequestProtocol"] :?> string
-    let owinScheme = env.["owin.RequestScheme"] :?> string
-    let owinQueryString = env.["owin.RequestQueryString"] :?> string
-    let owinBodyStream = env.["owin.RequestBody"] :?> Stream
+    async {
+        let owinHeaders = env.["owin.RequestHeaders"] :?> IDictionary<string, string[]>
+        let owinVerb = env.["owin.RequestMethod"] :?> string
+        let owinBasePath = env.["owin.RequestPathBase"] :?> string
+        let owinPath = env.["owin.RequestPath"] :?> string
+        let owinProtocol = env.["owin.RequestProtocol"] :?> string
+        let owinScheme = env.["owin.RequestScheme"] :?> string
+        let owinQueryString = env.["owin.RequestQueryString"] :?> string
+        let owinBodyStream = env.["owin.RequestBody"] :?> Stream
 
-    let headers =
-        owinHeaders :> seq<KeyValuePair<string, string[]>>
-        |> Seq.map (fun (KeyValue(key, values)) -> (key, String.concat ", " values))
+        let headers =
+            owinHeaders :> seq<KeyValuePair<string, string[]>>
+            |> Seq.map mapHeader
 
-    let verb =
-        match owinVerb.ToLowerInvariant() with
-        | "get" -> Get
-        | "post" -> Post
-        | "put" -> Put
-        | "delete" -> Delete
-        | _ -> failwith "Unsupported request method."
+        let verb =
+            match owinVerb.ToLowerInvariant() with
+            | "get" -> Get
+            | "post" -> Post
+            | "put" -> Put
+            | "delete" -> Delete
+            | _ -> failwith "Unsupported request method."
     
-    let url =
-        { scheme = owinScheme
-          host = owinHeaders.["Host"] |> Seq.head
-          basePath = owinBasePath
-          path = owinPath
-          queryString = Map.empty } // TODO: Include querystring
+        let url =
+            { scheme = owinScheme
+              host = owinHeaders.["Host"] |> Seq.head
+              basePath = owinBasePath
+              path = owinPath
+              queryString = Map.empty } // TODO: Include querystring
     
-    // TODO: Make other kinds of bodies possible
-    // TODO: Make body async
-    let bodyReader = new StreamReader(owinBodyStream, Encoding.UTF8)
-
-    HttpRequest.make verb url
-    |> HttpRequest.withHeaders headers
-    |> HttpRequest.withBodyOfString (bodyReader.ReadToEnd())
+        let! body = readBytesAsync owinBodyStream
+        return HttpRequest.make verb url
+        |> HttpRequest.withHeaders headers
+        |> HttpRequest.withBodyOfBytes body
+    }
 
 let initializeResponse (env : IDictionary<string, obj>) = 
     let owinHeaders = env.["owin.ResponseHeaders"] :?> IDictionary<string, string[]>
 
     let headers =
         owinHeaders :> seq<KeyValuePair<string, string[]>>
-        |> Seq.map (fun (KeyValue(key, values)) -> (key, String.concat ", " values))
+        |> Seq.map mapHeader
 
     HttpResponse.make HttpStatus.ok200
     |> HttpResponse.withHeaders headers
 
-let owinToAction env = 
-    let request = initializeRequest env
-    let response = initializeResponse env
-    HttpAction (Async.singleton (HttpData (request, response, ())))
-
-let actionToOwin (env : IDictionary<string, obj>) (HttpAction asyncData) =
+let initializeContext env = 
     async {
-        let! HttpData(_, response, _) = asyncData
+        let! request = initializeRequest env
+        let response = initializeResponse env
+        return Context.make request response
+    }
+
+let writeContext (env : IDictionary<string, obj>) context =
+    async {
+        let response = Context.getResponse context
 
         match HttpResponse.getStatus response with
         | HttpStatus code ->
@@ -81,15 +97,13 @@ let actionToOwin (env : IDictionary<string, obj>) (HttpAction asyncData) =
         
         let owinBodyStream = env.["owin.ResponseBody"] :?> Stream
         let bytes = HttpResponse.getBodyAsBytes response
-        do! owinBodyStream.WriteAsync(bytes, 0, Array.length bytes) |> Async.awaitPlainTask
-        do! owinBodyStream.FlushAsync() |> Async.awaitPlainTask
+        do! writeBytesAsync bytes owinBodyStream
     }
 
 let run application env = 
-    let initialAction = owinToAction env
-    let result = application initialAction
-    result
-    |> actionToOwin env
+    initializeContext env
+    |> Async.bind application
+    |> Async.bind (writeContext env)
     |> Async.startAsPlainTask
     
 let createAppFunc (application : SalmiakApplication<unit, 'T>) = AppFunc(run application)

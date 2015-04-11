@@ -4,7 +4,7 @@ open System
 open System.Collections.Generic
 open System.Threading.Tasks
 
-type SalmiakApplication<'T, 'U> = HttpAction<HttpData<'T>>  -> HttpAction<HttpData<'U>> 
+type SalmiakApplication<'T, 'U> = Context<'T>  -> Async<Context<'U>> 
 
 type AppFunc = Func<IDictionary<string, obj>, Task>
 type MiddlewareFunc = Func<AppFunc, AppFunc>

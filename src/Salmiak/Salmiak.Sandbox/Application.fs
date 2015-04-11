@@ -2,9 +2,10 @@
 
 open Salmiak
 
-let init (HttpAction asyncData) =
+let init context =
     async {
-        let! HttpData(request, response, context) = asyncData
+        let request = Context.getRequest context
+        let response = Context.getResponse context
 
         let requestHeaders = 
             request
@@ -28,5 +29,5 @@ let init (HttpAction asyncData) =
             |> HttpResponse.withBodyOfString body
             |> HttpResponse.withHeader "salmiak" "test"
 
-        return HttpData(request, response', context)
-    } |> HttpAction
+        return Context.withResponse response' context
+    }

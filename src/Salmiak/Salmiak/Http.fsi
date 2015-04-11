@@ -6,16 +6,9 @@ type HttpStatus =
      | HttpStatus of int 
      | HttpStatusWithPhrase of int * string
 
-// TODO: Re-include HttpBody when there is need to add more detailed deserializations
-//type HttpBody
+type HttpBody
 type HttpRequest
 type HttpResponse
-
-[<NoEquality; NoComparison>]
-type HttpData<'T> = HttpData of HttpRequest * HttpResponse * 'T
-
-[<NoEquality; NoComparison>]
-type HttpAction<'T> = HttpAction of Async<'T>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpStatus =
@@ -25,13 +18,13 @@ module HttpStatus =
     val notFound404 : HttpStatus
     val internalServerError500 : HttpStatus
 
-//[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-//module HttpBody = 
-//    val empty : HttpBody
-//    val ofString : body:string -> HttpBody
-//    val ofBytes : body:byte[] -> HttpBody
-//    val asString : body:HttpBody -> string
-//    val asBytes : body:HttpBody -> byte[]
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module HttpBody = 
+    val empty : HttpBody
+    val ofString : body:string -> HttpBody
+    val ofBytes : body:byte[] -> HttpBody
+    val asString : body:HttpBody -> string
+    val asBytes : body:HttpBody -> byte[]
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpRequest = 
@@ -49,9 +42,11 @@ module HttpRequest =
     val withoutHeader : name:string -> request:HttpRequest -> HttpRequest
     val mapHeaders : mapping:(string -> string -> string) -> request:HttpRequest -> HttpRequest
     val filterHeaders : predicate:(string -> string -> bool) -> request:HttpRequest -> HttpRequest
-    val getBodyAsBytes : request:HttpRequest -> byte []
+    val getBody : request:HttpRequest -> HttpBody
+    val getBodyAsBytes : request:HttpRequest -> byte[]
     val getBodyAsString : request:HttpRequest -> string
-    val withBodyOfBytes : body:byte [] -> request:HttpRequest -> HttpRequest
+    val withBody: body:HttpBody -> request:HttpRequest -> HttpRequest
+    val withBodyOfBytes : body:byte[] -> request:HttpRequest -> HttpRequest
     val withBodyOfString : body:string -> request:HttpRequest -> HttpRequest
     val withoutBody : request:HttpRequest -> HttpRequest
 
@@ -69,8 +64,10 @@ module HttpResponse =
     val withoutHeader : name:string -> response:HttpResponse -> HttpResponse
     val mapHeaders : mapping:(string -> string -> string) -> response:HttpResponse -> HttpResponse
     val filterHeaders : predicate:(string -> string -> bool) -> response:HttpResponse -> HttpResponse
-    val getBodyAsBytes : response:HttpResponse -> byte []
+    val getBody : response:HttpResponse -> HttpBody
+    val getBodyAsBytes : response:HttpResponse -> byte[]
     val getBodyAsString : response:HttpResponse -> string
-    val withBodyOfBytes : body:byte [] -> response:HttpResponse -> HttpResponse
+    val withBody : body:HttpBody -> response:HttpResponse -> HttpResponse
+    val withBodyOfBytes : body:byte[] -> response:HttpResponse -> HttpResponse
     val withBodyOfString : body:string -> response:HttpResponse -> HttpResponse
     val withoutBody : response:HttpResponse -> HttpResponse

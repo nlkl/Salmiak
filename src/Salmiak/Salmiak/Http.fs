@@ -20,9 +20,6 @@ type HttpResponse =
       headers : HttpHeaders
       body : HttpBody }
 
-type HttpData<'T> = HttpData of HttpRequest * HttpResponse * 'T
-type HttpAction<'T> = HttpAction of Async<'T>
-
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpStatus =
     let ok200 = HttpStatusWithPhrase(200, "OK")
@@ -72,8 +69,10 @@ module HttpRequest =
     let mapHeaders mapping (request : Req) = { request with headers = Map.map mapping request.headers }
     let filterHeaders predicate (request : Req) = { request with headers = Map.filter predicate request.headers }
 
+    let getBody (request : Req) = request.body
     let getBodyAsBytes (request : Req) = HttpBody.asBytes request.body
     let getBodyAsString (request : Req) = HttpBody.asString request.body
+    let withBody body (request : Req) = { request with body = body }
     let withBodyOfBytes body (request : Req) = { request with body = HttpBody.ofBytes body }
     let withBodyOfString body (request : Req) = { request with body = HttpBody.ofString body }
     let withoutBody (request : Req) = { request with body = HttpBody.empty }
@@ -101,8 +100,10 @@ module HttpResponse =
     let mapHeaders mapping (response : Res) = { response with headers = Map.map mapping response.headers }
     let filterHeaders predicate (response : Res) = { response with headers = Map.filter predicate response.headers }
 
+    let getBody (response : Res) = response.body
     let getBodyAsBytes (response : Res) = HttpBody.asBytes response.body
     let getBodyAsString (response : Res) = HttpBody.asString response.body
+    let withBody body (response : Res) = { response with body = body }
     let withBodyOfBytes body (response : Res) = { response with body = HttpBody.ofBytes body }
     let withBodyOfString body (response : Res) = { response with body = HttpBody.ofString body }
     let withoutBody (response : Res) = { response with body = HttpBody.empty }

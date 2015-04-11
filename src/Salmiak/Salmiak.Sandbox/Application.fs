@@ -1,15 +1,29 @@
 ﻿module Salmiak.Sandbox.Application
 
 open Salmiak
+module Req = HttpRequest
+module Res = HttpResponse
 
-let init context =
+let (>>!) f g = fun x -> 
+    async {
+        let! y = f x
+        return! g y
+    }
+
+let addSalmiakHeader context = 
+    async {
+        return context
+        |> Context.mapResponse (Res.withHeader "X-Powered-By" "Salmiak")
+    }
+
+let makeResponse context =
     async {
         let request = Context.getRequest context
         let response = Context.getResponse context
 
         let requestHeaders = 
             request
-            |> HttpRequest.getHeaders
+            |> Req.getHeaders
             |> Seq.map (fun (name, value) -> sprintf "<li>%s: %s</li>" name value)
             |> String.concat ""
 
@@ -26,8 +40,19 @@ let init context =
 
         let response' =
             response
-            |> HttpResponse.withBodyOfString body
-            |> HttpResponse.withHeader "salmiak" "test"
+            |> Res.withBodyOfString body
+            |> Res.withHeader "salmiak" "test"
 
         return Context.withResponse response' context
     }
+
+let create () = addSalmiakHeader >>! makeResponse
+
+// Using explicit async workflow
+//let app context =
+//    async {
+//        let! context = addSalmiakHeader context
+//        let! context = makeResponse context
+//        return context
+//    }
+    

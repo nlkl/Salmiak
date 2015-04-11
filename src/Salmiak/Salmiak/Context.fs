@@ -19,5 +19,8 @@ module Context =
     let withResponse response action = { action with response = response }
     let withData data action = { action with data = data }
     let withoutData action = { action with data = () }
+    let mapRequest mapping action = { action with request = mapping action.request }
+    let mapResponse mapping action = { action with response = mapping action.response }
+    let mapData mapping action = { action with data = mapping action.data }
 
 

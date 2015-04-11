@@ -5,7 +5,9 @@ open Microsoft.Owin.Hosting
 open Salmiak
 
 type Bootstrapper() = 
-    member this.Configuration(app : IAppBuilder) = app.Use(Salmiak.Owin.createMiddlewareFunc Application.init) |> ignore
+    member this.Configuration(app : IAppBuilder) = 
+        let salmiakApplication = Application.create ()
+        app.Use(Salmiak.Owin.createMiddlewareFunc salmiakApplication) |> ignore
 
 module Program = 
     [<EntryPoint>]

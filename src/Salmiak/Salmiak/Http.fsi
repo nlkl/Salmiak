@@ -49,6 +49,7 @@ module HttpRequest =
     val withBodyOfBytes : body:byte[] -> request:HttpRequest -> HttpRequest
     val withBodyOfString : body:string -> request:HttpRequest -> HttpRequest
     val withoutBody : request:HttpRequest -> HttpRequest
+    val mapBody: mapping:(HttpBody -> HttpBody) -> request:HttpRequest -> HttpRequest
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpResponse = 
@@ -71,3 +72,4 @@ module HttpResponse =
     val withBodyOfBytes : body:byte[] -> response:HttpResponse -> HttpResponse
     val withBodyOfString : body:string -> response:HttpResponse -> HttpResponse
     val withoutBody : response:HttpResponse -> HttpResponse
+    val mapBody: mapping:(HttpBody -> HttpBody) -> response:HttpResponse -> HttpResponse

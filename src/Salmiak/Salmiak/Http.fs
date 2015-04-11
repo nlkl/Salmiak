@@ -62,7 +62,6 @@ module HttpRequest =
     let getHeader name (request : Req) = Map.find name request.headers
     let tryGetHeader name (request : Req) = Map.tryFind name request.headers
     let containsHeader name (request : Req) = Map.containsKey name request.headers
-
     let withHeaders headers (request : Req) = { request with headers = Seq.fold (fun hs (name, value) -> Map.add name value hs) request.headers headers }
     let withHeader name value (request : Req) = { request with headers = Map.add name value request.headers } 
     let withoutHeader name (request : Req) = { request with headers = Map.remove name request.headers }
@@ -76,6 +75,7 @@ module HttpRequest =
     let withBodyOfBytes body (request : Req) = { request with body = HttpBody.ofBytes body }
     let withBodyOfString body (request : Req) = { request with body = HttpBody.ofString body }
     let withoutBody (request : Req) = { request with body = HttpBody.empty }
+    let mapBody mapping (request : Req) = { request with body = mapping request.body }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpResponse =
@@ -93,7 +93,6 @@ module HttpResponse =
     let getHeader name (response : Res) = Map.find name response.headers
     let tryGetHeader name (response : Res) = Map.tryFind name response.headers
     let containsHeader name (response : Res) = Map.containsKey name response.headers
-
     let withHeaders headers (response : Res) = { response with headers = Seq.fold (fun hs (name, value) -> Map.add name value hs) response.headers headers }
     let withHeader name value (response : Res) = { response with headers = Map.add name value response.headers } 
     let withoutHeader name (response : Res) = { response with headers = Map.remove name response.headers }
@@ -107,3 +106,4 @@ module HttpResponse =
     let withBodyOfBytes body (response : Res) = { response with body = HttpBody.ofBytes body }
     let withBodyOfString body (response : Res) = { response with body = HttpBody.ofString body }
     let withoutBody (response : Res) = { response with body = HttpBody.empty }
+    let mapBody mapping (response : Res) = { response with body = mapping response.body }

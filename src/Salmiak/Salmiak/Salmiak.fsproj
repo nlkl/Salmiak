@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Async.fs" />
+    <Compile Include="Url.fsi" />
     <Compile Include="Url.fs" />
     <Compile Include="Http.fsi" />
     <Compile Include="Http.fs" />

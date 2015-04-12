@@ -62,7 +62,7 @@ module HttpRequest =
     let getHeader name (request : Req) = Map.find name request.headers
     let tryGetHeader name (request : Req) = Map.tryFind name request.headers
     let containsHeader name (request : Req) = Map.containsKey name request.headers
-    let withHeaders headers (request : Req) = { request with headers = Seq.fold (fun hs (name, value) -> Map.add name value hs) request.headers headers }
+    let withHeaders headers (request : Req) = { request with headers = Map.ofSeq headers }
     let withHeader name value (request : Req) = { request with headers = Map.add name value request.headers } 
     let withoutHeader name (request : Req) = { request with headers = Map.remove name request.headers }
     let mapHeaders mapping (request : Req) = { request with headers = Map.map mapping request.headers }

@@ -26,6 +26,19 @@ let writeBytesAsync bytes (stream : Stream) =
 
 let mapHeader (KeyValue(key, values)) = (key, String.concat ", " values)
 
+let parseQueryParameters queryString =
+    let split (separator : string) (str : string) = str.Trim().Split([| separator |], StringSplitOptions.RemoveEmptyEntries)
+
+    let splitField (field : string) =
+        let i = field.IndexOf("=")
+        if i < 0 then None
+        else Some (field.Substring(0, i), field.Substring(i+1))
+
+    queryString
+    |> split "&"
+    |> Array.choose splitField
+    |> Array.toSeq
+
 let initializeRequest (env : IDictionary<string, obj>) = 
     async {
         let owinHeaders = env.["owin.RequestHeaders"] :?> IDictionary<string, string[]>
@@ -49,12 +62,18 @@ let initializeRequest (env : IDictionary<string, obj>) =
             | "delete" -> Delete
             | _ -> failwith "Unsupported request method."
     
-        let url =
-            { scheme = owinScheme
-              host = owinHeaders.["Host"] |> Seq.head
-              basePath = owinBasePath
-              path = owinPath
-              queryString = Map.empty } // TODO: Include querystring
+        let scheme =
+            match owinScheme.ToLowerInvariant() with
+            | "http" -> Http
+            | "https" -> Https
+            | _ -> failwith "Unsupported URL scheme."
+        
+        let host = owinHeaders.["Host"] |> Seq.head
+        let queryParameters = parseQueryParameters owinQueryString
+
+        let url = 
+            Url.make scheme host owinBasePath owinPath
+            |> Url.withQueryParameters queryParameters
     
         let! body = readBytesAsync owinBodyStream
         return HttpRequest.make verb url

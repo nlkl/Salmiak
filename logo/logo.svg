@@ -14,7 +14,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="New document 1">
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="C:\Development\Salmiak\logo\logo.png"
+   inkscape:export-xdpi="24.991713"
+   inkscape:export-ydpi="24.991713">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -24,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="182.9122"
-     inkscape:cy="101.21179"
+     inkscape:zoom="0.7"
+     inkscape:cx="247.21035"
+     inkscape:cy="82.09016"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -92,7 +95,7 @@
     </g>
     <g
        id="g3972"
-       transform="translate(63.63961,-7.0710678)">
+       transform="translate(44.951788,-31.314729)">
       <rect
          transform="matrix(0.28572812,0.95831072,-0.659504,0.75170106,0,0)"
          y="-540.97711"
@@ -110,9 +113,9 @@
          id="rect3033-1-0"
          style="fill:#98b8c2;fill-opacity:1;stroke:none" />
       <rect
-         transform="matrix(0.7051146,0.70909336,-0.22538687,0.97426935,0,0)"
-         y="22.097408"
-         x="531.36218"
+         transform="matrix(0.74682515,0.66502044,-0.16587942,0.98614604,0,0)"
+         y="84.831886"
+         x="494.39899"
          height="187.36298"
          width="187.36298"
          id="rect3033-1"

@@ -4,7 +4,7 @@ open Salmiak
 module Req = HttpRequest
 module Res = HttpResponse
 
-let (>>!) f g = fun x -> 
+let (>>!) f g x =
     async {
         let! y = f x
         return! g y

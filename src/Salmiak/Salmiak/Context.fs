@@ -12,15 +12,20 @@ module Context =
           response = response
           data = () }
 
-    let getRequest action = action.request
-    let getResponse action = action.response
-    let getData action = action.data
-    let withRequest request action = { action with request = request }
-    let withResponse response action = { action with response = response }
-    let withData data action = { action with data = data }
-    let withoutData action = { action with data = () }
-    let mapRequest mapping action = { action with request = mapping action.request }
-    let mapResponse mapping action = { action with response = mapping action.response }
-    let mapData mapping action = { action with data = mapping action.data }
+    let getRequest context = context.request
+    let getResponse context = context.response
+    let getData context = context.data
+    let withRequest request context = { context with request = request }
+    let withResponse response context = { context with response = response }
+
+    let withData data context = 
+        { request = context.request
+          response = context.response
+          data = data }
+
+    let withoutData context = withData () context
+    let mapRequest mapping context = { context with request = mapping context.request }
+    let mapResponse mapping context = { context with response = mapping context.response }
+    let mapData mapping context = withData (mapping context.data ) context
 
 

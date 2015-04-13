@@ -47,12 +47,3 @@ let makeResponse context =
     }
 
 let create () = addSalmiakHeader >>! makeResponse
-
-// Using explicit async workflow
-//let app context =
-//    async {
-//        let! context = addSalmiakHeader context
-//        let! context = makeResponse context
-//        return context
-//    }
-    

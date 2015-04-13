@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.IO
 open System.Text
 open System.Threading.Tasks
+open Salmiak.Utils
 
 type SalmiakApplication<'T, 'U> = Context<'T>  -> Async<Context<'U>> 
 

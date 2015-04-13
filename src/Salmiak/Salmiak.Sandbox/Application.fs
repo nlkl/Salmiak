@@ -1,14 +1,10 @@
 ﻿module Salmiak.Sandbox.Application
 
 open Salmiak
+open Salmiak.Utils
+
 module Req = HttpRequest
 module Res = HttpResponse
-
-let (>>!) f g x =
-    async {
-        let! y = f x
-        return! g y
-    }
 
 let addSalmiakHeader context = 
     async {

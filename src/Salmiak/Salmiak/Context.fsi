@@ -1,6 +1,7 @@
 ﻿namespace Salmiak
 
 type Context<'T>
+type Application<'T, 'U> = Context<'T> -> Async<Context<'U>>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Context =

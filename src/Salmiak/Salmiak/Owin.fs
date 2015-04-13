@@ -7,8 +7,6 @@ open System.Text
 open System.Threading.Tasks
 open Salmiak.Utils
 
-type SalmiakApplication<'T, 'U> = Context<'T>  -> Async<Context<'U>> 
-
 type AppFunc = Func<IDictionary<string, obj>, Task>
 type MiddlewareFunc = Func<AppFunc, AppFunc>
 
@@ -126,7 +124,7 @@ let run application env =
     |> Async.bind (writeContext env)
     |> Async.startAsPlainTask
     
-let createAppFunc (application : SalmiakApplication<unit, 'T>) = AppFunc(run application)
+let createAppFunc (application : Application<unit, 'T>) = AppFunc(run application)
 let createMiddlewareFunc application = MiddlewareFunc(fun _ -> createAppFunc application)
 
 

@@ -5,6 +5,8 @@ type Context<'T> =
       response : HttpResponse
       data : 'T }
 
+type Application<'T, 'U> = Context<'T> -> Async<Context<'U>>
+
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Context =
     let make request response = 

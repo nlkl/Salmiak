@@ -12,34 +12,59 @@ let addSalmiakHeader context =
         |> Context.mapResponse (Res.withHeader "X-Powered-By" "Salmiak")
     }
 
-let makeResponse context =
+let baseTemplate = 
+    sprintf "\
+        <html> \
+            <head><title>Salmiak</title></head> \
+            <body> \
+                <nav> \
+                    <a href=\"/\">Home</a> | \
+                    <a href=\"/headers\">Headers</a> \
+                </nav> \
+                %s \
+            </body> \
+        </html>"
+
+let home context =
+    async {
+        let template = "\
+                <h3>Salmiak playground</h3> \
+                <p>This is just a test.</p>"
+
+        let body = baseTemplate template
+
+        return Context.mapResponse (HttpResponse.withBodyOfString body) context
+    }
+
+let viewHeaders context =
     async {
         let request = Context.getRequest context
         let response = Context.getResponse context
 
-        let requestHeaders = 
-            request
-            |> Req.getHeaders
+        let formatHeaders headers = 
+            headers
             |> Seq.map (fun (name, value) -> sprintf "<li>%s: %s</li>" name value)
             |> String.concat ""
 
+        let requestHeaders = request |> Req.getHeaders |> formatHeaders
+        let responseHeaders = response |> Res.getHeaders |> formatHeaders
+
         let template = 
-            "<html> \
-                 <head><title>Salmiak</title></head> \
-                 <body> \
-                     <h3>Request headers:</h3> \
-                     <ul>{0}</ul> \
-                 </body> \
-             </html>"
+            sprintf "\
+                <h3>Request headers:</h3> \
+                <ul>%s</ul> \
+                <h3>Response headers:</h3> \
+                <ul>%s</ul>"
 
-        let body = System.String.Format(template, requestHeaders)
+        let body = baseTemplate (template requestHeaders responseHeaders)
 
-        let response' =
-            response
-            |> Res.withBodyOfString body
-            |> Res.withHeader "salmiak" "test"
-
-        return Context.withResponse response' context
+        return Context.mapResponse (HttpResponse.withBodyOfString body) context
     }
 
-let create () = addSalmiakHeader >>! makeResponse
+let create () = 
+    let app =
+        Routing.dispatch
+            [ Routing.makeStaticRoute "/" home
+              Routing.makeStaticRoute "/headers" viewHeaders ]
+
+    addSalmiakHeader >>! app

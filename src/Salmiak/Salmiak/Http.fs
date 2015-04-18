@@ -22,11 +22,11 @@ type HttpResponse =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpStatus =
-    let ok200 = HttpStatusWithPhrase(200, "OK")
-    let unauthorized401 = HttpStatusWithPhrase(401, "Unauthorized")
-    let forbidden403 = HttpStatusWithPhrase(403, "Forbidden")
-    let notFound404 = HttpStatusWithPhrase(404, "Not Found")
-    let internalServerError500 = HttpStatusWithPhrase(500, "Internal Server Error")
+    let ok200 = HttpStatusWithPhrase (200, "OK")
+    let unauthorized401 = HttpStatusWithPhrase (401, "Unauthorized")
+    let forbidden403 = HttpStatusWithPhrase (403, "Forbidden")
+    let notFound404 = HttpStatusWithPhrase (404, "Not Found")
+    let internalServerError500 = HttpStatusWithPhrase (500, "Internal Server Error")
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpBody =

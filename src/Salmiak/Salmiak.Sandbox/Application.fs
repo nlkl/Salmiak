@@ -33,7 +33,7 @@ let home context =
 
         let body = baseTemplate template
 
-        return Context.mapResponse (HttpResponse.withBodyOfString body) context
+        return Context.mapResponse (Res.withBodyOfString body) context
     }
 
 let viewHeaders context =
@@ -58,13 +58,15 @@ let viewHeaders context =
 
         let body = baseTemplate (template requestHeaders responseHeaders)
 
-        return Context.mapResponse (HttpResponse.withBodyOfString body) context
+        return Context.mapResponse (Res.withBodyOfString body) context
     }
 
 let create () = 
+    // Main application
     let app =
         Routing.dispatch
             [ Routing.makeStaticRoute "/" home
               Routing.makeStaticRoute "/headers" viewHeaders ]
 
+    // Application pipeline: middleware and whatnot
     addSalmiakHeader >>! app

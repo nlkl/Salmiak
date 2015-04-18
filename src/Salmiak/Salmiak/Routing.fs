@@ -2,8 +2,6 @@
 
 type RoutePredicate<'T> = Context<'T> -> bool
 type Route<'T, 'U> = Route of RoutePredicate<'T> * Application<'T, 'U>
-//type RouteMapping<'T, 'U> = RoutePredicate<'T> * Application<'T, 'U>
-//type RouteMap<'T, 'U> = RouteMapping<'T, 'U> list
 
 module Routing =
     open System.Text.RegularExpressions
@@ -38,5 +36,6 @@ module Routing =
             Regex.IsMatch(path, pattern)
         makeUrlRoute predicate application
 
+    // TODO: Consider adding Sinatra like URLs here
     let makeSimpleRoute verb dynamicPath application = failwith "Not implemented"
 

@@ -59,7 +59,6 @@ module HttpRequest =
     let withUrl url request = { request with url = url }
 
     let getHeaders (request : Req) = Map.toSeq request.headers
-    let getHeader name (request : Req) = Map.find name request.headers
     let tryGetHeader name (request : Req) = Map.tryFind name request.headers
     let containsHeader name (request : Req) = Map.containsKey name request.headers
     let withHeaders headers (request : Req) = { request with headers = Map.ofSeq headers }
@@ -90,7 +89,6 @@ module HttpResponse =
     let withStatus status response = { response with status = status }
 
     let getHeaders (response : Res) = Map.toSeq response.headers
-    let getHeader name (response : Res) = Map.find name response.headers
     let tryGetHeader name (response : Res) = Map.tryFind name response.headers
     let containsHeader name (response : Res) = Map.containsKey name response.headers
     let withHeaders headers (response : Res) = { response with headers = Seq.fold (fun hs (name, value) -> Map.add name value hs) response.headers headers }

@@ -3,7 +3,7 @@
 type Context<'T> =
     { request : HttpRequest
       response : HttpResponse
-      data : 'T }
+      state : 'T option }
 
 type Application<'T, 'U> = Context<'T> -> Async<Context<'U>>
 
@@ -12,22 +12,30 @@ module Context =
     let make request response = 
         { request = request
           response = response
-          data = () }
+          state = None }
 
     let getRequest context = context.request
     let getResponse context = context.response
-    let getData context = context.data
+    let tryGetState context = context.state
     let withRequest request context = { context with request = request }
     let withResponse response context = { context with response = response }
 
-    let withData data context = 
+    let withState state context = 
         { request = context.request
           response = context.response
-          data = data }
+          state = Some state }
 
-    let withoutData context = withData () context
+    let withoutState context = 
+        { request = context.request
+          response = context.response
+          state = None }
+
     let mapRequest mapping context = { context with request = mapping context.request }
     let mapResponse mapping context = { context with response = mapping context.response }
-    let mapData mapping context = withData (mapping context.data ) context
+
+    let mapState mapping context = 
+        { request = context.request
+          response = context.response
+          state = Option.map mapping context.state }
 
 

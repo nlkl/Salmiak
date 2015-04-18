@@ -12,7 +12,6 @@ module Url =
     val getPath : url:Url -> string
     val getFullPath : url:Url -> string
     val getQueryParameters : url:Url -> seq<string * string>
-    val getQueryParameter : name:string -> url:Url -> string
     val tryGetQueryParameter : name:string -> url:Url -> string option
     val containsQueryParameter : name:string -> url:Url -> bool
     val getQueryString : url:Url -> string

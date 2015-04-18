@@ -34,7 +34,6 @@ module HttpRequest =
     val getUrl : request:HttpRequest -> Url
     val withUrl : url:Url -> request:HttpRequest -> HttpRequest
     val getHeaders : request:HttpRequest -> seq<string * string>
-    val getHeader : name:string -> request:HttpRequest -> string
     val tryGetHeader : name:string -> request:HttpRequest -> string option
     val containsHeader : name:string -> request:HttpRequest -> bool
     val withHeaders : headers:seq<string * string> -> request:HttpRequest -> HttpRequest
@@ -57,7 +56,6 @@ module HttpResponse =
     val getStatus : response:HttpResponse -> HttpStatus
     val withStatus : status:HttpStatus -> response:HttpResponse -> HttpResponse
     val getHeaders : response:HttpResponse -> seq<string * string>
-    val getHeader : name:string -> response:HttpResponse -> string
     val tryGetHeader : name:string -> response:HttpResponse -> string option
     val containsHeader : name:string -> response:HttpResponse -> bool
     val withHeaders : headers:seq<string * string> -> response:HttpResponse -> HttpResponse

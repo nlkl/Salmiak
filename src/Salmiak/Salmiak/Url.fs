@@ -24,7 +24,6 @@ module Url =
     let getPath url = url.path
     let getFullPath url = url.basePath + url.path
     let getQueryParameters url = url.queryParameters |> Map.toSeq
-    let getQueryParameter name url = Map.find name url.queryParameters
     let tryGetQueryParameter name url = Map.tryFind name url.queryParameters
     let containsQueryParameter name url = Map.containsKey name url.queryParameters
     

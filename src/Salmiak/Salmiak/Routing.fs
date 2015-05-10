@@ -82,8 +82,7 @@ module Routing =
             if mtch.Success then 
                 let tryGetParameter (groupName : string) =
                     let group = mtch.Groups.[groupName]
-                    if group.Success then Some (groupName, group.Value)
-                    else None
+                    if group.Success then Some (groupName, group.Value) else None
                 regex.GetGroupNames()
                 |> Seq.choose tryGetParameter
                 |> Some

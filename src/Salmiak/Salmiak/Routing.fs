@@ -10,7 +10,7 @@ type RouteData =
 
 type Route<'T, 'U> = 
     { name : RouteName
-      predicate : Context<'T> -> RouteParameters option
+      predicate : HttpContext<'T> -> RouteParameters option
       resolver : RouteResolver
       application : RouteData -> Application<'T, 'U> }
 
@@ -53,8 +53,8 @@ module Routing =
         | Some app -> app context
         | None ->
             context
-            |> Context.withoutInfo
-            |> Context.mapResponse (HttpResponse.withStatus HttpStatus.notFound404)
+            |> HttpContext.withoutInfo
+            |> HttpContext.mapResponse (HttpResponse.withStatus HttpStatus.notFound404)
             |> Async.singleton
 
     let makeRoute name predicate application =
@@ -67,7 +67,7 @@ module Routing =
         makeRoute name (fun _ -> Some Seq.empty) application
 
     let makeUrlRoute name predicate application =
-        let routePredicate = Context.getRequest >> HttpRequest.getUrl >> predicate
+        let routePredicate = HttpContext.getRequest >> HttpRequest.getUrl >> predicate
         makeRoute name routePredicate application 
 
     let makeStaticRoute name path application =

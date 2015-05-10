@@ -94,12 +94,12 @@ let initializeContext env =
     async {
         let! request = initializeRequest env
         let response = initializeResponse env
-        return Context.make request response
+        return HttpContext.make request response
     }
 
 let writeContext (env : IDictionary<string, obj>) context =
     async {
-        let response = Context.getResponse context
+        let response = HttpContext.getResponse context
 
         match HttpResponse.getStatus response with
         | HttpStatus code ->

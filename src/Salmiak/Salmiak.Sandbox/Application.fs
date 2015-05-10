@@ -9,7 +9,7 @@ module Res = HttpResponse
 let addSalmiakHeader context = 
     async {
         return context
-        |> Context.mapResponse (Res.withHeader "X-Powered-By" "Salmiak")
+        |> HttpContext.mapResponse (Res.withHeader "X-Powered-By" "Salmiak")
     }
 
 let baseTemplate = 
@@ -33,13 +33,13 @@ let home routeData context =
 
         let body = baseTemplate template
 
-        return Context.mapResponse (Res.withBodyOfString body) context
+        return HttpContext.mapResponse (Res.withBodyOfString body) context
     }
 
 let viewHeaders routeData context =
     async {
-        let request = Context.getRequest context
-        let response = Context.getResponse context
+        let request = HttpContext.getRequest context
+        let response = HttpContext.getResponse context
 
         let formatHeaders headers = 
             headers
@@ -58,7 +58,7 @@ let viewHeaders routeData context =
 
         let body = baseTemplate (template requestHeaders responseHeaders)
 
-        return Context.mapResponse (Res.withBodyOfString body) context
+        return HttpContext.mapResponse (Res.withBodyOfString body) context
     }
 
 let create () = 

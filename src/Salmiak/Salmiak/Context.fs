@@ -1,14 +1,14 @@
 ﻿namespace Salmiak
 
-type Context<'T> =
+type HttpContext<'T> =
     { request : HttpRequest
       response : HttpResponse
       info : 'T option }
 
-type Application<'T, 'U> = Context<'T> -> Async<Context<'U>>
+type Application<'T, 'U> = HttpContext<'T> -> Async<HttpContext<'U>>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Context =
+module HttpContext =
     let make request response = 
         { request = request
           response = response

@@ -4,7 +4,7 @@ type RouteName = string
 type RouteParameters = seq<string * string>
 type RouteResolver = RouteParameters -> Url option
 
-type RouteData = 
+type RouteContext = 
     { parameters : Map<string, string>
       resolvers : Map<RouteName, RouteResolver> }
 
@@ -12,22 +12,22 @@ type Route<'T, 'U> =
     { name : RouteName
       predicate : HttpContext<'T> -> RouteParameters option
       resolver : RouteResolver
-      application : RouteData -> Application<'T, 'U> }
+      application : RouteContext -> Application<'T, 'U> }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module RouteData =
+module RouteContext =
     let empty = 
         { parameters = Map.empty
           resolvers = Map.empty }
     
-    let getParameters name data = Map.toSeq data.parameters
-    let tryGetParameter name data = Map.tryFind name data.parameters
-    let withParameters parameters data = { data with parameters = Map.ofSeq parameters }
-    let withParameter name value data = { data with parameters = Map.add name value data.parameters }
+    let getParameters name context = Map.toSeq context.parameters
+    let tryGetParameter name context = Map.tryFind name context.parameters
+    let withParameters parameters context = { context with parameters = Map.ofSeq parameters }
+    let withParameter name value context = { context with parameters = Map.add name value context.parameters }
     // TODO: Map, filter, maybe?
 
-    let tryResolve routeName parameters data = 
-        data.resolvers
+    let tryResolve routeName parameters context = 
+        context.resolvers
         |> Map.tryFind routeName
         |> Option.bind (fun resolver -> resolver parameters)
 
@@ -38,13 +38,13 @@ module Routing =
 
     let dispatch routes context =
         // TODO: Initialize with resolvers
-        let routeData = RouteData.empty
+        let routeContext = RouteContext.empty
 
         let tryFollowRoute route =
             match route.predicate context with
             | Some parameters -> 
-                routeData
-                |> RouteData.withParameters parameters
+                routeContext
+                |> RouteContext.withParameters parameters
                 |> route.application
                 |> Some
             | None -> None
@@ -80,15 +80,16 @@ module Routing =
             let regex = Regex(pattern)
             let mtch = regex.Match(path)
             if mtch.Success then 
-               regex.GetGroupNames()
-               |> Array.map (fun name -> (name, mtch.Groups.[name]))
-               |> Array.filter (fun (_, grp) -> grp.Success)
-               |> Array.map (fun (name, grp) -> (name, grp.Value))
-               |> Array.toSeq
-               |> Some
+                let tryGetParameter (groupName : string) =
+                    let group = mtch.Groups.[groupName]
+                    if group.Success then Some (groupName, group.Value)
+                    else None
+                regex.GetGroupNames()
+                |> Seq.choose tryGetParameter
+                |> Some
             else None
         makeUrlRoute name predicate application
 
     // TODO: Consider adding Sinatra like URLs here
-    let makeSimpleRoute verb dynamicPath application = failwith "Not implemented"
+    let makeSimpleRoute name verb dynamicPath application = failwith "Not implemented"
 

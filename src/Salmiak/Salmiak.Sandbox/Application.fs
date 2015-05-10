@@ -25,7 +25,7 @@ let baseTemplate =
             </body> \
         </html>"
 
-let home routeData context =
+let home routeContext context =
     async {
         let template = "\
                 <h3>Salmiak playground</h3> \
@@ -36,7 +36,7 @@ let home routeData context =
         return HttpContext.mapResponse (Res.withBodyOfString body) context
     }
 
-let viewHeaders routeData context =
+let viewHeaders routeContext context =
     async {
         let request = HttpContext.getRequest context
         let response = HttpContext.getResponse context

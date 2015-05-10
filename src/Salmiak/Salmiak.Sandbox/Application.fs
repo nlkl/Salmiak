@@ -25,7 +25,7 @@ let baseTemplate =
             </body> \
         </html>"
 
-let home context =
+let home routeData context =
     async {
         let template = "\
                 <h3>Salmiak playground</h3> \
@@ -36,7 +36,7 @@ let home context =
         return Context.mapResponse (Res.withBodyOfString body) context
     }
 
-let viewHeaders context =
+let viewHeaders routeData context =
     async {
         let request = Context.getRequest context
         let response = Context.getResponse context
@@ -65,8 +65,8 @@ let create () =
     // Main application
     let app =
         Routing.dispatch
-            [ Routing.makeStaticRoute "/" home
-              Routing.makeStaticRoute "/headers" viewHeaders ]
+            [ Routing.makeStaticRoute "home"    "/"        home
+              Routing.makeStaticRoute "headers" "/headers" viewHeaders ]
 
     // Application pipeline: middleware and whatnot
     addSalmiakHeader >>! app

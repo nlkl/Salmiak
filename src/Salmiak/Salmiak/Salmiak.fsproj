@@ -49,7 +49,8 @@
     <Compile Include="Url.fs" />
     <Compile Include="Http.fsi" />
     <Compile Include="Http.fs" />
-    <Compile Include="Routing.fsi" />
+    <Compile Include="Application.fsi" />
+    <Compile Include="Application.fs" />
     <Compile Include="Routing.fs" />
     <Compile Include="Owin.fsi" />
     <Compile Include="Owin.fs" />

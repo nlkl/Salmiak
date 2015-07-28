@@ -11,7 +11,6 @@ type HttpRequest
 type HttpResponse
 
 type HttpContext<'T>
-type Application<'T, 'U> = HttpContext<'T> -> Async<HttpContext<'U>>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpStatus =

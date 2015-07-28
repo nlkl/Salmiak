@@ -25,8 +25,6 @@ type HttpContext<'T> =
       response : HttpResponse
       info : 'T option }
 
-type Application<'T, 'U> = HttpContext<'T> -> Async<HttpContext<'U>>
-
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module HttpStatus =
     let ok200 = HttpStatusWithPhrase (200, "OK")

@@ -1,81 +1,91 @@
 ﻿namespace Salmiak
 
-type RouteName = string
 type RouteParameters = seq<string * string>
-type RouteResolver = RouteParameters -> Url option
 
-type RouteContext = 
+type RouteResolver<'T> = 'T -> RouteParameters -> RelativeUrl option
+
+type RouteContext<'T> = 
     { parameters : Map<string, string>
-      resolvers : Map<RouteName, RouteResolver> }
+      resolvers : RouteResolver<'T> list }
 
-type Route<'T, 'U> = 
-    { name : RouteName
-      predicate : HttpContext<'T> -> RouteParameters option
-      resolver : RouteResolver
-      application : RouteContext -> Application<'T, 'U> }
+type Route<'S, 'T, 'U> = HttpContext<'T> -> (RouteContext<'S> -> Async<HttpContext<'U>>) option
+
+type Routing<'S, 'T, 'U> =
+    { routes : Route<'S, 'T, 'U> list
+      resolvers : RouteResolver<'S> list }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module RouteContext =
     let empty = 
         { parameters = Map.empty
-          resolvers = Map.empty }
+          resolvers = [] }
     
     let getParameters name context = Map.toSeq context.parameters
     let tryGetParameter name context = Map.tryFind name context.parameters
     let withParameters parameters context = { context with parameters = Map.ofSeq parameters }
     let withParameter name value context = { context with parameters = Map.add name value context.parameters }
+    let withResolvers resolvers (context : RouteContext<'T>) = { context with resolvers = resolvers }
     // TODO: Map, filter, maybe?
 
     let tryResolve routeName parameters context = 
-        context.resolvers
-        |> Map.tryFind routeName
-        |> Option.bind (fun resolver -> resolver parameters)
+        Seq.tryPick (fun resolver -> resolver routeName parameters) context.resolvers
 
-
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Routing =
     open System.Text.RegularExpressions
     open Salmiak.Utils
 
-    let dispatch routes context =
-        // TODO: Initialize with resolvers
-        let routeContext = RouteContext.empty
+    let init = 
+        { routes = []
+          resolvers = [] }
+
+    let dispatch routing context =
+        let routeContext = RouteContext.empty |> RouteContext.withResolvers routing.resolvers
 
         let tryFollowRoute route =
-            match route.predicate context with
-            | Some parameters -> 
-                routeContext
-                |> RouteContext.withParameters parameters
-                |> route.application
-                |> Some
+            match route context with
+            | Some routeApp -> Some (routeApp routeContext)
             | None -> None
         
-        match List.tryPick tryFollowRoute routes with
-        | Some app -> app context
+        match List.tryPick tryFollowRoute routing.routes with
+        | Some app -> app
         | None ->
             context
             |> HttpContext.withoutInfo
             |> HttpContext.mapResponse (HttpResponse.withStatus HttpStatus.notFound404)
             |> Async.singleton
 
-    let makeRoute name predicate application =
-        { name = name
-          predicate = predicate
-          resolver = fun _ -> None // TODO: Implement resolvers
-          application = application }
+    let withResolver resolver (routing : Routing<'S, 'T, 'U>) =
+        { routing with resolvers = resolver :: routing.resolvers }
 
-    let makeCatchAllRoute name application = 
-        makeRoute name (fun _ -> Some Seq.empty) application
+    let withRoute selector application routing =
+        let route context =
+            match selector context with
+            | Some parameters -> 
+                let routeApp routeContext = 
+                    let routeContext = RouteContext.withParameters parameters routeContext
+                    application routeContext context
+                Some routeApp
+            | None -> None
+        { routing with routes = route :: routing.routes }
 
-    let makeUrlRoute name predicate application =
-        let routePredicate = HttpContext.getRequest >> HttpRequest.getUrl >> predicate
-        makeRoute name routePredicate application 
+    let withCatchAllRoute application routing = 
+        withRoute (fun _ -> Some Seq.empty) application routing
 
-    let makeStaticRoute name path application =
-        let predicate url = if path = Url.getPath url then Some Seq.empty else None
-        makeUrlRoute name predicate application 
+    let withUrlRoute selector application routing =
+        let routeSelector = HttpContext.getRequest >> HttpRequest.getUrl >> selector
+        withRoute routeSelector application routing
 
-    let makeRegexRoute name pattern application =
-        let predicate url =
+    let withStaticRoute name path application routing =
+        let selector url = if path = Url.getPath url then Some Seq.empty else None
+        let resolver name' _ = if name' = name then Some (RelativeUrl.make path) else None
+        routing
+        |> withUrlRoute selector application
+        |> withResolver resolver
+
+    // TODO: Simple reversal
+    let withRegexRoute pattern application routing =
+        let selector url =
             let path = Url.getPath url
             let regex = Regex(pattern)
             let mtch = regex.Match(path)
@@ -87,7 +97,7 @@ module Routing =
                 |> Seq.choose tryGetParameter
                 |> Some
             else None
-        makeUrlRoute name predicate application
+        withUrlRoute selector application routing
 
     // TODO: Consider adding Sinatra like URLs here
     let makeSimpleRoute name verb dynamicPath application = failwith "Not implemented"

@@ -1,7 +1,13 @@
 ﻿namespace Salmiak
 
 type UrlScheme = Http | Https
+type RelativeUrl
 type Url
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module RelativeUrl =
+    val make : path:string -> RelativeUrl
+    val getPath : url:RelativeUrl -> string
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Url =

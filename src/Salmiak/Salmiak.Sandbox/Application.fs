@@ -64,9 +64,10 @@ let viewHeaders routeContext context =
 let create () = 
     // Main application
     let app =
-        Routing.dispatch
-            [ Routing.makeStaticRoute "home"    "/"        home
-              Routing.makeStaticRoute "headers" "/headers" viewHeaders ]
+        Routing.init
+        |> Routing.withStaticRoute "home"    "/"        home
+        |> Routing.withStaticRoute "headers" "/headers" viewHeaders
+        |> Routing.dispatch
 
     // Application pipeline: middleware and whatnot
     addSalmiakHeader >>! app
